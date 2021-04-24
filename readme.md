@@ -65,3 +65,8 @@ iSCSI | iscsi
 
 > Для доступа к веб-проекту на Wordpress необходимо на хост машине прописать адрес роутера (Router): `192.168.10.10 airmeno.ru`.
 
+Сервис | Адрес
+------| ---------
+Wordpress (Nginx+PHP-FPM) | https://192.168.10.20 (https://airmeno.ru)
+ELK | http://192.168.10.40:5601
+Zabbix | http://192.168.10.50/zabbix
