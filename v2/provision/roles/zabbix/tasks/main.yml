@@ -128,7 +128,7 @@
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
   with_items:
-    - { path: '/etc/zabbix/zabbix_server.conf', regexp: '^# DBPassword=', line: 'DBPassword=zabbix'}
+    - { path: '/etc/zabbix/zabbix_server.conf', regexp: '^# DBPassword=', line: 'DBPassword=zabbix'} 
     - { path: '/etc/opt/rh/rh-php72/php-fpm.d/zabbix.conf', regexp: '^; php_value[date.timezone] = Europe/Riga', line: 'php_value[date.timezone] = Europe/Moscow'}
   notify:
     - restart zabbix

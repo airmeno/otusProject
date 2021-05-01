@@ -3,7 +3,7 @@
   become: true
   roles: 
     - router
-    - zabbixagent
+    - zabbix_agent
     - filebeat
 
 
@@ -12,14 +12,14 @@
   roles:
     - linux
     - elk
-    - zabbixagent
+    - zabbix_agent
 
 - hosts: storage
   become: true
   roles:
     - linux
     - iscsi
-    - zabbixagent
+    - zabbix_agent
     - filebeat
 
 - hosts: mysql
@@ -27,16 +27,18 @@
   roles:
     - linux
     - mysql
-    - zabbixagent
+    - zabbix_agent
     - filebeat
+    - nfs_client
 
 - hosts: nginx
   become: true
   roles:
     - linux
     - nginx
-    - zabbixagent
+    - zabbix_agent
     - filebeat
+    - nfs_client
 
 - hosts: zabbix
   become: true
@@ -50,5 +52,5 @@
   roles:
     - linux
     - nfs_server
-    - zabbixagent
+    - zabbix_agent
     - filebeat      

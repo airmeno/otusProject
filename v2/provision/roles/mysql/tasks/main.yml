@@ -94,19 +94,7 @@
     priv: '*.*:ALL,GRANT'
     state: present
     host: '%'
-  no_log: true   
-
-
-- name: create mysql zabbix user
-  mysql_user:
-    login_user: root
-    login_password: "{{ mysql_password }}"
-    name: "zabbix"
-    password: 'zabbix'
-    priv: 'zabbix.*:ALL,GRANT'
-    state: present
-    host: '%'
-  no_log: true    
+  no_log: true      
 
 - name: 'Config MariaDB'
   copy: 
@@ -119,13 +107,7 @@
   mysql_db:
     name: wordpress
     state: present        
-
-
-- name: Create a new database 'zabbix'
-  mysql_db:
-    name: zabbix
-    state: present        
-
+    
 
 - name: 'Enable MySQL in Firewalld'
   firewalld:

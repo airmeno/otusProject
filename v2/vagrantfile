@@ -13,6 +13,14 @@ MACHINES = {
     :disks => {},
   }, 
 
+  :backup => {
+    :box_name => "centos/7",
+    :memory => 512,
+    :cpus => 1,
+    :ip_addr => '192.168.10.90',    
+    :disks => {},
+  },
+
   :elk => {
     :box_name => "centos/7",
     :cpus => 2,
@@ -61,13 +69,6 @@ MACHINES = {
     :memory => 512,
     :cpus => 1,
     :ip_addr => '192.168.10.50',    
-    :disks => {},
-  }, 
-  :backup => {
-    :box_name => "centos/7",
-    :memory => 512,
-    :cpus => 1,
-    :ip_addr => '192.168.10.90',    
     :disks => {},
   }, 
 }
