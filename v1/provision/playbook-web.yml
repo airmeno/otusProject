@@ -1,0 +1,272 @@
+---
+- name: 'WEB Server configure playbook'
+  hosts: nginx
+  become: true
+
+  vars:
+    wordpress_url: "https://wordpress.org/latest.tar.gz"
+    wpdirectory: "/usr/share/nginx/html"
+
+  tasks:
+
+    - name: Set timezone
+      timezone:
+        name: Europe/Moscow
+
+    - name: Remove default route
+      lineinfile:
+        line: "DEFROUTE=no"
+        dest: /etc/sysconfig/network-scripts/ifcfg-eth0
+
+    - name: Add gateway
+      lineinfile:
+        line: "GATEWAY=192.168.10.10"
+        dest: /etc/sysconfig/network-scripts/ifcfg-eth1  
+
+
+    - name: Firewalld service - firewalld is running
+      systemd:
+        name: firewalld
+        enabled: true
+        state: started    
+
+    - name: Add Nginx Repository
+      yum_repository:
+        name: nginx
+        description: NGINX
+        file: nginx
+        baseurl: https://nginx.org/packages/mainline/centos/$releasever/$basearch/
+        gpgcheck: false
+        enabled: true 
+
+    - name: 'Install Nginx'
+      yum:
+        name: nginx
+        state: present      
+
+    - name: 'Copy Certificates'
+      copy:
+        src: conf/{{ item }}
+        dest: /etc/ssl/
+      with_items:
+        ['ca.crt','private.key','certificate.crt']            
+
+    - name: 'Configure Nginx'
+      copy: 
+        src: conf/nginx.conf 
+        dest: /etc/nginx/nginx.conf
+      notify:
+        - restart nginx   
+
+    - name: 'Configure Nginx Wordpress'
+      copy: 
+        src: conf/wordpress.conf 
+        dest: /etc/nginx/conf.d/
+      notify:
+        - restart nginx           
+
+    - name: 'Install remi repo'
+      yum:
+        name: https://rpms.remirepo.net/enterprise/remi-release-7.rpm
+        state: present
+
+    - name: 'Enable remi-php74'
+      shell: yum-config-manager --enable remi-php74  
+
+    - name: 'Install PHP-FPM'
+      yum:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - php
+        - php-fpm
+        - php-mbstring
+        - php-mysql
+        - php-xml
+        - php-simplexml
+        - libsemanage-python
+
+    - name: 'Change php-fpm to listen on socket'
+      ini_file: dest=/etc/php-fpm.d/www.conf
+        section=www
+        option=listen
+        value=/var/run/php-fpm/php-fpm.sock
+      notify:
+        - restart php-fpm                
+
+
+    - name: 'php-fpm listen mode should always be 0660'
+      ini_file: dest=/etc/php-fpm.d/www.conf
+        section=www
+        option=listen.mode
+        value=0660
+      notify:
+        - restart php-fpm      
+
+    - name: 'Change php-fpm user'
+      ini_file: dest=/etc/php-fpm.d/www.conf
+        section=www
+        option=user
+        value=nginx
+      notify:
+        - restart php-fpm
+
+    - name: 'Change php-fpm group'
+      ini_file: dest=/etc/php-fpm.d/www.conf
+        section=www
+        option=group
+        value=nginx
+      notify:
+        - restart php-fpm
+
+    - name: 'Change php-fpm listen.owner'
+      ini_file: dest=/etc/php-fpm.d/www.conf
+        section=www
+        option=listen.owner
+        value=nginx
+      notify:
+        - restart php-fpm
+
+    - name: 'Change php-fpm listen.group'
+      ini_file: dest=/etc/php-fpm.d/www.conf
+        section=www
+        option=listen.group
+        value=nginx
+      notify:
+        - restart php-fpm
+
+    - name: 'Enable http ports in Firewalld'
+      firewalld:
+        service: http
+        permanent: yes
+        state: enabled
+
+    - name: 'Enable https ports in Firewalld'
+      firewalld:
+        service: https
+        permanent: yes
+        state: enabled 
+  
+    - name: 'Reload Firewalld'
+      systemd:
+        name: firewalld
+        state: reloaded 
+
+    - name: restart php-fpm
+      systemd:
+        name: php-fpm
+        enabled: yes
+        state: started     
+
+    - name: download WordPress
+      unarchive:
+        src: "{{ wordpress_url }}"
+        dest: "{{ wpdirectory }}"
+        remote_src: yes
+
+    #### SELinux config for Nginx
+    - name: Set httpd_can_network_connect flag on and keep it persistent across reboots
+      seboolean:
+        name: httpd_can_network_connect_db
+        state: yes
+        persistent: yes    
+
+
+    #### ELK Filebeat
+    - name: Add ELK Repository
+      yum_repository:
+        name: elasticsearch-7
+        description: ELK
+        file: elasticserach.repo
+        baseurl: https://artifacts.elastic.co/packages/7.x/yum
+        gpgcheck: true
+        gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+        enabled: true     
+
+    - name: 'Install Filebeat'
+      yum:
+        name: filebeat
+        state: present
+
+    - name: 'Configure Filebeat'
+      copy: 
+        src: conf/filebeat.yml 
+        dest: /etc/filebeat/filebeat.yml
+      notify:
+        - restart filebeat
+
+    - name: 'Filebeat Nginx'
+      shell: |
+        filebeat modules enable nginx   
+        filebeat setup
+      notify:
+        - restart filebeat    
+
+  ############## Zabbix ###################
+
+    - name: install the Zabbix repo
+      yum:
+        name: https://repo.zabbix.com/zabbix/5.0/rhel/7/x86_64/zabbix-release-5.0-1.el7.noarch.rpm
+        state: present
+
+    - name: yum-clean-all
+      command: yum clean all
+      args:
+        warn: no  
+
+    - name: Install Zabbix Agent
+      yum:
+        name: zabbix-agent
+        state: present   
+
+    - name: 'Config Zabbix Agent'
+      lineinfile:
+        path:  /etc/zabbix/zabbix_agentd.conf
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      with_items:
+        - { regexp: '^Server=127.0.0.1', line: 'Server=192.168.10.50'}
+        - { regexp: '^Hostname=', line: 'Hostname=nginx'}
+      notify:
+        - restart zabbix
+
+    - firewalld:
+        service: zabbix-agent
+        permanent: yes
+        state: enabled        
+    
+    - name: 'Reload Firewalld'
+      systemd:
+        name: firewalld
+        state: reloaded         
+
+
+  handlers:
+
+    - name: restart nginx 
+      systemd:
+        name: nginx
+        enabled: yes
+        state: restarted
+
+    - name: restart php-fpm
+      systemd:
+        name: php-fpm
+        enabled: yes
+        state: restarted   
+
+    - name: restart network
+      systemd:
+        name: network
+        state: restarted       
+
+    - name: restart filebeat 
+      systemd:
+        name: filebeat
+        enabled: yes
+        state: restarted            
+
+    - name: restart zabbix
+      systemd:
+        name: zabbix-agent
+        state: restarted                         

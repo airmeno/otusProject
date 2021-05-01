@@ -1,0 +1,139 @@
+---
+- name: 'Install packages'
+  yum:
+    name: iscsi-initiator-utils 
+    state: 'present'
+  notify:
+    - restart iscsi 
+
+- name: Connect iSCSI disk
+  shell: "iscsiadm -m discovery -t sendtargets -p 192.168.10.100 && iscsiadm -m node --login"
+
+- name: Create a directory
+  file:
+    path: /var/lib/mysql
+    state: directory
+
+- name: Parted iSCSI disk
+  shell: |
+    parted -s /dev/sdb mklabel gpt
+    parted /dev/sdb mkpart primary ext4 0% 100%
+    mkfs.ext4 /dev/sdb1 
+    mount -t ext4 /dev/sdb1 /var/lib/mysql 
+
+         
+#### MySQL config   
+- name: Add MariaDB Repository
+  yum_repository:
+    name: MariaDB
+    description: MariaDB
+    file: MariaDB.repo
+    baseurl: http://yum.mariadb.org/10.4/centos7-amd64
+    gpgcheck: true
+    gpgkey: https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    enabled: true 
+
+- name: install mysql (mariadb)
+  yum:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - mariadb-server
+    - MySQL-python
+
+- name: Create a directory
+  file:
+    path: /var/log/mysql
+    owner: mysql
+    group: mysql
+    state: directory        
+
+- name: enable mysql (mariadb)
+  systemd:
+    name: mariadb
+    state: restarted
+    enabled: yes
+
+- name: 'mysql_root_password'
+  mysql_user:
+    login_user: root
+    login_password: "{{ mysql_password }}"
+    user: root
+    check_implicit_admin: true
+    password: "{{ mysql_password }}"
+    host: localhost
+  no_log: true  
+
+- name: 'root password'
+  blockinfile:
+    path: ~/.my.cnf
+    create: yes
+    block: |
+      [client]
+      user=root
+      password={{ mysql_password }}      
+
+- name: Removes all anonymous user accounts
+  mysql_user:
+    name: ''
+    host_all: yes
+    state: absent
+  no_log: true   
+
+- name: test database is absent
+  mysql_db:
+    name: test
+    state: absent    
+
+- name: create mysql client user
+  mysql_user:
+    login_user: root
+    login_password: "{{ mysql_password }}"
+    name: "meno"
+    password: "{{ mysql_password }}"
+    priv: '*.*:ALL,GRANT'
+    state: present
+    host: '%'
+  no_log: true   
+
+
+- name: create mysql zabbix user
+  mysql_user:
+    login_user: root
+    login_password: "{{ mysql_password }}"
+    name: "zabbix"
+    password: 'zabbix'
+    priv: 'zabbix.*:ALL,GRANT'
+    state: present
+    host: '%'
+  no_log: true    
+
+- name: 'Config MariaDB'
+  copy: 
+    src: files/mysql-small.cnf 
+    dest: /etc/my.cnf.d/mysql-small.cnf
+  notify:
+    - restart mariadb
+
+- name: Create a new database with name 'wordpress'
+  mysql_db:
+    name: wordpress
+    state: present        
+
+
+- name: Create a new database 'zabbix'
+  mysql_db:
+    name: zabbix
+    state: present        
+
+
+- name: 'Enable MySQL in Firewalld'
+  firewalld:
+    service: mysql
+    permanent: yes
+    state: enabled 
+
+- name: 'Reload Firewalld'
+  systemd:
+    name: firewalld
+    state: reloaded 

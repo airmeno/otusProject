@@ -1,0 +1,49 @@
+---
+- name: 'Install NFS Server'
+  yum:
+    name: nfs-utils
+    state: present
+
+- name: Create a directory
+  file:
+    path: /var/nfs/upload
+    state: directory
+    mode: 777
+    owner: root
+    group: root
+
+- name: Config NFS Server
+  shell: |
+    echo "/var/nfs 192.168.10.0/24(rw,sync,root_squash)" >> /etc/exports
+    exportfs -r      
+
+
+
+### Firewalld ###
+
+- name: Firewalld service - firewalld is running
+  systemd:
+    name: firewalld
+    enabled: true
+    state: started  
+
+- firewalld:
+    service: nfs
+    permanent: true
+    state: enabled 
+
+- firewalld:
+    service: mountd
+    permanent: true
+    state: enabled 
+
+- firewalld:
+    service: rpc-bind
+    permanent: true
+    state: enabled 
+
+- name: 'Reload Firewalld'
+  systemd:
+    name: firewalld
+    state: reloaded 
+
