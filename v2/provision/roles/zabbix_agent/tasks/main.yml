@@ -20,8 +20,8 @@
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
   with_items:
-    - { regexp: '^Server=127.0.0.1', line: 'Server=192.168.10.50'}
-    - { regexp: '^Hostname=', line: 'Hostname=router'}
+    - { regexp: '^Server=127.0.0.1', line: 'Server={{ zabbix_server_ip }}'}
+    - { regexp: '^Hostname=', line: 'Hostname={{ zabbix_hostname }}'}
   notify:
     - restart zabbix
 

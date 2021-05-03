@@ -39,11 +39,11 @@ MySQL (MariaDB) из командной строки подключается к
 Причина в политиках безопасности SELinux.
 
 По умолчанию политика httpd_can_network_connect_db отключена (веб-сервер не может связаться с удаленной БД.)
-
+```
 getsebool -a | grep httpd_can_network_connect_db 
 
 setsebool -P httpd_can_network_connect_db 1 
-
+```
 
 
 ### iSCSI
@@ -54,10 +54,10 @@ https://linux-admins.ru/article.php?id_article=66&article_title=Установк
 
 
 If SELinux is enabled, change SELinux Context.
-
+```
 chcon -R -t tgtd_var_lib_t /var/lib/iscsi_disks
 semanage fcontext -a -t tgtd_var_lib_t /var/lib/iscsi_disks
-
+```
 
 ### Zabbix 
 

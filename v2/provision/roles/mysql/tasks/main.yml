@@ -90,7 +90,7 @@
     login_user: root
     login_password: "{{ mysql_password }}"
     name: "meno"
-    password: "{{ mysql_password }}"
+    password: "{{ user_password }}"
     priv: '*.*:ALL,GRANT'
     state: present
     host: '%'
