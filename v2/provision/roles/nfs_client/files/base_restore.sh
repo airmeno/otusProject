@@ -9,7 +9,7 @@ DB_NAME="wordpress"
 
 ### Резервное копирование баз в локальную папку  ###
 
-zcat $BACKUP_DIR/wordpress_$RESTORE_DATE.sql.gz | mysql -uDB_USER -pDB_PASSWORD wordpress
+zcat $BACKUP_DIR/$DB_NAME_$RESTORE_DATE.sql.gz | mysql -u$DB_USER -p$DB_PASSWORD $DB_NAME
 
 ### Проверка выгрузки ###
 if test $? = 0

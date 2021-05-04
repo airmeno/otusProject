@@ -23,7 +23,7 @@
     mode: a+x
   with_items:
     ['base_backup.sh','base_restore.sh']   
-  when: ansible_hostname == 'mysql'
+  when: ansible_hostname == 'mysqlmaster' or ansible_hostname == 'mysqlslave'
 
 - name: 'Copy Backup Scripts'  
   copy:

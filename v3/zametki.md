@@ -75,6 +75,12 @@ chcon -R -t tgtd_var_lib_t /var/lib/iscsi_disks
 semanage fcontext -a -t tgtd_var_lib_t /var/lib/iscsi_disks
 ```
 
+
+Show LUN 
+```
+tgtadm --mode target --op show 
+```
+
 ### Zabbix 
 
 To solve the problem zabbix server is not running you have to :
@@ -114,3 +120,41 @@ dump mysql database
 ```
 mysqldump -uzabbix -pzabbix zabbix | gzip > ~vagrant/zabbix.sql.gz
 ```
+
+
+
+### MySQL Replica
+
+https://dev.mysql.com/doc/refman/8.0/en/replication-solutions-switch.html
+
+
+pass = Otus#Linux2021
+
+
+```
+mysql -uroot -pOtus#Linux2021
+
+mysql> SHOW MASTER STATUS\G
+mysql> SHOW SLAVE STATUS\G
+```
+
+Check replication:
+```
+select id,post_name,post_title from wp_posts;
+```
+
+###Slave to Master
+> mysql
+STOP SLAVE;
+RESET MASTER;
+CHANGE MASTER TO MASTER_HOST='192.168.10.35';
+
+
+Change in wordpress config file (wp-config.php) DB Server = 192.168.10.35
+
+### Master to Slave
+
+>mysql
+RESET MASTER;
+change master to master_host='192.168.10.35', master_port=3306, master_user='repl', master_password='Otus#Linux2021', master_auto_position=2;
+START SLAVE;

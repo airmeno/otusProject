@@ -1,4 +1,10 @@
 ---
+### Epel Release
+- name: Epel release
+  yum:
+    name: epel-release
+    state: present    
+
 #### Congig LVM and mount 
 - name: 'Install packages'
   yum:
@@ -23,7 +29,7 @@
   lvol:
     vg: vg01
     lv: otus
-    size: '3072'
+    size: '2048'
     pvs: /dev/sdb,/dev/sdc
     opts: -m1
     state: present
@@ -61,12 +67,12 @@
 
 ### iSCSI config
 - name: Create disk 
-  command: dd if=/dev/zero of=/var/lib/iscsi_disks/disk01.img bs=1M count=2048      
+  command: dd if=/dev/zero of=/var/lib/iscsi_disks/disk01.img bs=1M count=1536      
 
 - name: 'iSCSI Target Congig'
   copy: 
-    src: files/target01.conf 
-    dest: /etc/tgt/conf.d/target01.conf
+    src: files/target01.conf
+    dest: /etc/tgt/conf.d/  
   notify:
     - restart iscsi  
 
