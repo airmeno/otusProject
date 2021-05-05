@@ -40,7 +40,8 @@
 ------| ---------
 Router | 192.168.10.10
 WEB (Nginx) | 192.168.10.20
-MySQL (MariaDB) | 192.168.10.30
+MySQL (MASTER) | 192.168.10.30
+MySQL (SLAVE) | 192.168.10.35
 LogServer (ELK) | 192.168.10.40
 Monitoring (Zabbix) | 192.168.10.50
 Data (iSCSI)`*` | 192.168.10.100
@@ -58,7 +59,8 @@ Backup (NFS Server) | 192.168.10.90
 ------| ---------
 Router | router
 WEB | nginx
-MySQL | mysql
+MySQL Master | mysqlmaster
+MySQL Slave | mysqlslave
 ELK | elk
 Storage | storage
 Backup | backup

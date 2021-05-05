@@ -26,7 +26,6 @@
           mysql_replication:
             mode: changemaster
             master_host: "{{ mysql_slave_ip }}"
-     
       when: ansible_hostname == 'mysqlslave'
  
     - name: Config Master to Slave
@@ -63,5 +62,4 @@
             path:  /usr/share/nginx/html/wordpress/wp-config.php
             regexp: "^define( 'DB_HOST', '192.168.10.30' );"
             line: "define( 'DB_HOST', '192.168.10.35' );"
-
       when: ansible_hostname == 'nginx'
