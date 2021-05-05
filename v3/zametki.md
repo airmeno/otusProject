@@ -2,7 +2,7 @@
 
 Вагрант при выключении хоста и потом включении делает автоконфиг сетевых устройств eth1 (private_network)
 
-В vagranatfile в:
+В vagranatfil:
 
 ```
 config.vm.define boxname do |box|
@@ -86,6 +86,17 @@ client
 iscsiadm -m node
 ```
 
+### Nginx
+
+SELinux
+
+```
+setsebool -P httpd_can_network_connect_db 1 
+
+chcon -R -t httpd_sys_content_t /usr/share/nginx/html/wordpress
+```
+
+
 ### Zabbix 
 
 To solve the problem zabbix server is not running you have to :
@@ -165,5 +176,5 @@ RESET MASTER;
 change master to master_host='192.168.10.35', master_port=3306, master_user='repl', master_password='Otus#Linux2021', master_auto_position=2;
 START SLAVE;
 ```
-
+cd repl_mysql
 ansible-playbook master-slave.yml
