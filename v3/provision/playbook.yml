@@ -25,28 +25,28 @@
 - hosts: mysqlmaster
   become: true
   roles:
-    #- linux
-    #- mysql
-    # - zabbix_agent
-    # - filebeat
+    - linux
+    - mysql
+    - zabbix_agent
+    - filebeat
     - nfs_client
 
 - hosts: mysqlslave
   become: true
   roles:
-    #- linux
-    #- mysql
-    # - zabbix_agent
-    # - filebeat
+    - linux
+    - mysql
+    - zabbix_agent
+    - filebeat
     - nfs_client
 
 - hosts: nginx
   become: true
   roles:
-    #- linux
-    #- nginx
-    # - zabbix_agent
-    # - filebeat
+    - linux
+    - nginx
+    - zabbix_agent
+    - filebeat
     - nfs_client
 
 - hosts: zabbix

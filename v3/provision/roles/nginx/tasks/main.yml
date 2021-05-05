@@ -18,11 +18,14 @@
 
 - name: Parted iSCSI disk
   shell: |
+    touch /root/.parted
     parted -s /dev/sdb mklabel gpt
     parted /dev/sdb mkpart primary ext4 0% 100%
     mkfs.ext4 /dev/sdb1 
     mount -t ext4 /dev/sdb1 {{ iscsi_disk_path }}
-
+    echo "/dev/sdb1 {{ iscsi_disk_path }} ext4 _netdev 0 0" >> /etc/fstab
+  args:
+    creates: /root/.parted
 
 - name: Add Nginx Repository
   yum_repository:
@@ -164,6 +167,8 @@
     src: "{{ wordpress_url }}"
     dest: "{{ wpdirectory }}"
     remote_src: yes
+  args:
+    creates: "{{ wpdirectory }}/wp-config-sample.php" 
 
 #### SELinux config for Nginx
 - name: Set httpd_can_network_connect flag on and keep it persistent across reboots

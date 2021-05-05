@@ -23,8 +23,8 @@ MACHINES = {
 
   :elk => {
     :box_name => "centos/7",
-    :cpus => 2,
-    :memory => 2048,
+    :cpus => 4,
+    :memory => 4096,
     :ip_addr => '192.168.10.40',    
     :disks => {},
   }, 
